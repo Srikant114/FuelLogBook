@@ -1,0 +1,27 @@
+# Dependency directories
+node_modules/
+vendor/
+target/ # For Java/JVM based projects
+
+# Build artifacts
+*.log
+*.tmp
+*.bak
+dist/
+build/
+out/
+
+# Environment variables and sensitive data
+.env
+.env.local
+config/secrets.js # Or similar files containing sensitive data
+*.key
+*.pem
+
+# Operating System and IDE specific files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
