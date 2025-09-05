@@ -4,9 +4,12 @@ import {
   getVehicles,
   getVehicleById,
   updateVehicle,
-  deleteVehicle
+  deleteVehicle,
+  uploadVehicleImage,
+  deleteVehicleImage
 } from "../controllers/vehicles.controller.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
+import { upload } from "../utils/multer.js";
 
 const router = express.Router();
 
@@ -16,5 +19,9 @@ router.get("/get-all-vehicles",authMiddleware, getVehicles);
 router.get("/get-vehicle/:id",authMiddleware, getVehicleById);
 router.put("/update-vehicle/:id",authMiddleware, updateVehicle);
 router.delete("/delete-vehicle/:id",authMiddleware, deleteVehicle);
+
+// Vehicle image upload / delete
+router.put("/upload-image/:id", authMiddleware, upload.single("image"), uploadVehicleImage);
+router.delete("/delete-image/:id", authMiddleware, deleteVehicleImage);
 
 export default router;

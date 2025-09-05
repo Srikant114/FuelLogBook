@@ -11,6 +11,7 @@ const vehicleSchema = new mongoose.Schema(
     make: { type: String },                 
     modelYear: { type: Number },            
     fuelType: { type: String, enum: ["Petrol", "Diesel", "EV"], default: "Petrol" },
+     imageUrl: { type: String }, // ✅ vehicle image
     notes: { type: String }
   },
   { timestamps: true }

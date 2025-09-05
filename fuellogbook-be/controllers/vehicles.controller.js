@@ -1,4 +1,50 @@
+import cloudinary from "../config/cloudinary.js";
 import Vehicle from "../models/Vehicle.model.js";
+
+// Upload / update vehicle image
+export const uploadVehicleImage = async (req, res) => {
+  try {
+    const vehicle = await Vehicle.findOne({ _id: req.params.id, userId: req.user.id });
+    if (!vehicle) return res.status(404).json({ success: false, message: "Vehicle not found" });
+    if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded" });
+
+    const streamUpload = (fileBuffer) =>
+    new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "fuelLogbook/vehicles" }, // ✅ all uploads go to fuelLogbook/vehicles
+        (error, result) => (result ? resolve(result) : reject(error))
+      );
+      stream.end(fileBuffer);
+    });
+
+    const result = await streamUpload(req.file.buffer);
+
+    vehicle.imageUrl = result.secure_url;
+    await vehicle.save();
+
+    res.status(200).json({ success: true, vehicle, message: "Vehicle image updated" });
+  } catch (err) {
+    console.error("uploadVehicleImage error:", err);
+    res.status(500).json({ success: false, message: "Upload failed" });
+  }
+};
+
+// Delete vehicle image
+export const deleteVehicleImage = async (req, res) => {
+  try {
+    const vehicle = await Vehicle.findOne({ _id: req.params.id, userId: req.user.id });
+    if (!vehicle || !vehicle.imageUrl)
+      return res.status(404).json({ success: false, message: "No image to delete" });
+
+    vehicle.imageUrl = null;
+    await vehicle.save();
+
+    res.status(200).json({ success: true, message: "Vehicle image deleted", vehicle });
+  } catch (err) {
+    console.error("deleteVehicleImage error:", err);
+    res.status(500).json({ success: false, message: "Deletion failed" });
+  }
+};
 
 // 🔹 Helper for consistent error handling
 const handleError = (res, error, status = 500) => {

@@ -11,6 +11,7 @@ import vehiclesRoute from "./routes/vehicles.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import googleAuthRoutes from "./routes/auth.google.routes.js";
 import setupGooglePassport from "./config/passport.js";
+import reportsRoute from "./routes/reports.routes.js";
 
 // App Name
 const APP_NAME = "FuelLogBook";
@@ -44,6 +45,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/auth", googleAuthRoutes); // Google OAuth endpoints
 app.use("/api/vehicles", vehiclesRoute);
 app.use("/api/vehicles/:vehicleId", logsRoute);
+app.use("/api/vehicles/:vehicleId", reportsRoute);
 
 // Start Server
 const PORT = Number(process.env.PORT) || 3000;
