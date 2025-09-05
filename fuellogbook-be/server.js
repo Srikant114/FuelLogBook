@@ -3,6 +3,7 @@ import "dotenv/config";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import { logger } from "./middleware/logger.js";
+import vehiclesRoute from "./routes/vehicles.routes.js";
 import authRoutes from './routes/auth.routes.js'
 
 //  App Name For log Purpose
@@ -26,7 +27,7 @@ app.get("/", (req, res) => res.send(`${APP_NAME} • Server is running`));
 
 // Mount logs routes
 app.use("/api/auth", authRoutes);
-
+app.use("/api/vehicles", vehiclesRoute);
 
 // Start Server
 const PORT = Number(process.env.PORT) || 3000;
