@@ -74,6 +74,8 @@ const Home = () => {
 
       {/* Sales Section */}
       <motion.div
+      id="get-started"
+      className="scroll-mt-22"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}

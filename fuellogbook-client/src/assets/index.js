@@ -8,6 +8,7 @@ import FLBFooterTextDark from "./FLB-footer-text-dark.png";
 import FLBFooterTextLight from "./FLB-footer-text-light.png";
 import FLBLogoDark from "./FLB-logo-dark.png";
 import FLBLogoLight from "./FLB-logo-light.png";
+import LoginBg from "./logbg.png"
 
 // SVGs
 import framer from "./companies-logo/framer.svg";
@@ -41,5 +42,6 @@ export {
   indian,
   re,
   shell,
-  tvs
+  tvs,
+  LoginBg
 };

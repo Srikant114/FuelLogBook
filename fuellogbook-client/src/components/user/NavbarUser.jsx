@@ -74,6 +74,7 @@ const NavbarUser = () => {
 
         {/* Desktop Buttons */}
         <button
+        
           className="hidden md:block transition px-4 py-2 border rounded-md"
           style={{
             borderColor: "var(--color-primary)",
@@ -81,7 +82,7 @@ const NavbarUser = () => {
             backgroundColor: "var(--color-bg)",
           }}
         >
-          Sign in
+          <Link to="/login">Sign in</Link>
         </button>
 
         <button
@@ -96,6 +97,7 @@ const NavbarUser = () => {
           onMouseOut={(e) =>
             (e.currentTarget.style.backgroundColor = "var(--color-primary)")
           }
+          onClick={(e) => handleScroll(e, "#get-started")}
         >
           Get started
         </button>
