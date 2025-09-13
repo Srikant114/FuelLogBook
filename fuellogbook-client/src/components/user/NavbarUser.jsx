@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { MenuIcon, XIcon } from "lucide-react";
 import { Link } from "react-router-dom";
-import logoLight from "../../assets/FLB-logo-light.png";
-import logoDark from "../../assets/FLB-logo-dark.png";
+import { FLBLogoLight, FLBLogoDark } from "../../assets/index";
 import { navLinks } from "../../data/navLinks";
 import ThemeToggle from "../../utils/ThemeToggle";
 import { useThemeContext } from "../../context/ThemeContext";
@@ -32,29 +31,55 @@ const NavbarUser = () => {
           height={40}
           priority
           fetchPriority="high"
-          src={theme === "light" ? logoLight : logoDark}
+          src={theme === "light" ? FLBLogoLight : FLBLogoDark}
           alt="logo"
         />
       </Link>
+
+      {/* Desktop Links */}
       <div className="hidden items-center md:gap-8 lg:gap-9 md:flex lg:pl-20">
         {navLinks?.map((link) => (
           <Link
             key={link?.name}
             href={link?.href}
-            className="hover:text-slate-600 dark:hover:text-slate-300"
+            className="transition hover:text-[var(--color-primary)] dark:hover:text-[var(--color-primary-light)]"
           >
             {link?.name}
           </Link>
         ))}
       </div>
+
       <div className="flex items-center gap-4">
         <ThemeToggle />
-        <button className="hidden md:block hover:bg-slate-100 dark:hover:bg-purple-950 transition px-4 py-2 border border-purple-600 rounded-md">
+
+        {/* Desktop Buttons */}
+        <button
+          className="hidden md:block transition px-4 py-2 border rounded-md"
+          style={{
+            borderColor: "var(--color-primary)",
+            color: "var(--color-text)",
+            backgroundColor: "var(--color-bg)",
+          }}
+        >
           Sign in
         </button>
-        <button className="hidden md:block px-4 py-2 bg-purple-600 hover:bg-purple-700 transition text-white rounded-md">
+
+        <button
+          className="hidden md:block transition px-4 py-2 rounded-md text-white"
+          style={{
+            backgroundColor: "var(--color-primary)",
+          }}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.backgroundColor = "var(--color-primary-dark)")
+          }
+          onMouseOut={(e) =>
+            (e.currentTarget.style.backgroundColor = "var(--color-primary)")
+          }
+        >
           Get started
         </button>
+
+        {/* Mobile Menu Toggle */}
         <button
           onClick={() => setOpenMobileMenu(!openMobileMenu)}
           className="md:hidden"
@@ -62,20 +87,45 @@ const NavbarUser = () => {
           <MenuIcon size={26} className="active:scale-90 transition" />
         </button>
       </div>
-      {/* Mobile Menu  */}
+
+      {/* Mobile Menu */}
       <div
-        className={`fixed inset-0 flex flex-col items-center justify-center gap-6 text-lg font-medium bg-white/60 dark:bg-black/40 backdrop-blur-md md:hidden transition duration-300 ${
-          openMobileMenu ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-0 flex flex-col items-center justify-center gap-6 text-lg font-medium backdrop-blur-md md:hidden transition duration-300 ${
+          openMobileMenu
+            ? "translate-x-0 bg-[var(--color-bg)/60] dark:bg-[var(--color-bg-dark)/40]"
+            : "-translate-x-full"
         }`}
       >
         {navLinks?.map((link) => (
-          <Link key={link?.name} href={link?.href}>
+          <Link
+            key={link?.name}
+            href={link?.href}
+            className="transition hover:text-[var(--color-primary)] dark:hover:text-[var(--color-primary-light)]"
+          >
             {link?.name}
           </Link>
         ))}
-        <button>Sign in</button>
+
         <button
-          className="aspect-square size-10 p-1 items-center justify-center bg-purple-600 hover:bg-purple-700 transition text-white rounded-md flex"
+          style={{
+            borderColor: "var(--color-primary)",
+            color: "var(--color-text)",
+            backgroundColor: "var(--color-bg)",
+          }}
+          className="px-4 py-2 border rounded-md transition"
+        >
+          Sign in
+        </button>
+
+        <button
+          className="aspect-square size-10 p-1 items-center justify-center rounded-md flex text-white"
+          style={{ backgroundColor: "var(--color-primary)" }}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.backgroundColor = "var(--color-primary-dark)")
+          }
+          onMouseOut={(e) =>
+            (e.currentTarget.style.backgroundColor = "var(--color-primary)")
+          }
           onClick={() => setOpenMobileMenu(false)}
         >
           <XIcon />
