@@ -2,6 +2,7 @@ import React from "react";
 import { useThemeContext } from "../../context/ThemeContext";
 import { motion } from "framer-motion";
 import { LoginBg } from "../../assets";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const { theme } = useThemeContext();
@@ -175,9 +176,9 @@ const Login = () => {
 
           <motion.p className="text-sm mt-2" variants={itemVariants}>
             Don’t have an account?{" "}
-            <a className="hover:underline text-indigo-400" href="/register">
+            <Link className="hover:underline text-indigo-400" to="/register">
               Sign up
-            </a>
+            </Link>
           </motion.p>
         </motion.form>
       </motion.div>
