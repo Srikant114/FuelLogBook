@@ -1,5 +1,6 @@
 // src/pages/Vehicles.jsx
 import React, { useEffect, useMemo, useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 /* components */
 import HeaderControls from "../components/Controls/HeaderControls";
@@ -9,65 +10,52 @@ import VehicleFormModal from "../components/Modals/VehicleFormModal";
 import ViewVehicleModal from "../components/Modals/ViewVehicleModal";
 import ConfirmDeleteModal from "../components/Modals/ConfirmDeleteModal";
 
+/* API */
+import {
+  getMyVehicles,
+  createVehicle,
+  updateVehicle,
+  deleteVehicle,
+  uploadVehicleImage,
+} from "../api/vehicles";
+
 /* utils */
 import { truncate } from "../utils/helpers";
 
 /* icons used elsewhere (optional) */
 import { FiSearch } from "react-icons/fi";
 
-/* ---------- sample data (replace with API) ---------- */
-const initialVehicles = [
-  {
-    id: "v1",
-    userId: "u1",
-    name: "Royal Enfield Hunter 350",
-    make: "Royal Enfield",
-    modelYear: 2023,
-    fuelType: "Petrol",
-    imageUrl:
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1200&auto=format&fit=crop",
-    notes: "Daily commuter, recently serviced. Good condition.",
-    createdAt: "2024-07-12",
-  },
-  {
-    id: "v2",
-    userId: "u1",
-    name: "Toyota Innova Crysta",
-    make: "Toyota",
-    modelYear: 2020,
-    fuelType: "Diesel",
-    imageUrl:
-      "https://images.unsplash.com/photo-1542367597-4512c5e3b2d5?q=80&w=1200&auto=format&fit=crop",
-    notes: "7-seater. Assigned to operations team.",
-    createdAt: "2024-05-21",
-  },
-  {
-    id: "v3",
-    userId: "u2",
-    name: "Tesla Model 3",
-    make: "Tesla",
-    modelYear: 2024,
-    fuelType: "EV",
-    imageUrl:
-      "https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1200&auto=format&fit=crop",
-    notes: "Corporate EV — fast charging enabled.",
-    createdAt: "2024-08-01",
-  },
-  {
-    id: "v4",
-    userId: "u3",
-    name: "Mahindra Thar",
-    make: "Mahindra",
-    modelYear: 2022,
-    fuelType: "Petrol",
-    imageUrl:
-      "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=1200&auto=format&fit=crop",
-    notes: "Offroad vehicle, occasionally used for field visits.",
-    createdAt: "2024-03-09",
-  },
-];
+/**
+ * Helper: normalize backend vehicle (_id -> id)
+ */
+function normalizeVehicle(raw) {
+  if (!raw) return null;
+  return {
+    ...raw,
+    id: raw._id ?? raw.id,
+  };
+}
+
+/**
+ * Convert dataURL (base64) to File object
+ */
+function dataURLtoFile(dataurl, filename = "image.png") {
+  if (!dataurl) return null;
+  const arr = dataurl.split(",");
+  if (arr.length < 2) return null;
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : "image/png";
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) u8arr[n] = bstr.charCodeAt(n);
+  return new File([u8arr], filename, { type: mime });
+}
 
 export default function Vehicles() {
+  const { user } = useAuth();
+
+  // === state/hooks (UNCONDITIONAL - must run in same order every render) ===
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -85,20 +73,35 @@ export default function Vehicles() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [activeVehicle, setActiveVehicle] = useState(null);
 
-  useEffect(() => {
+  // Load user's vehicles from backend
+  async function loadVehicles() {
     setLoading(true);
-    const t = setTimeout(() => {
-      setVehicles(initialVehicles);
+    try {
+      const list = await getMyVehicles(); // backend returns array in res.data.data
+      const normalized = Array.isArray(list) ? list.map(normalizeVehicle) : [];
+      setVehicles(normalized);
+    } catch (err) {
+      console.error("Failed to load vehicles", err);
+    } finally {
       setLoading(false);
-    }, 350);
-    return () => clearTimeout(t);
-  }, []);
+    }
+  }
+
+  useEffect(() => {
+    if (user) loadVehicles();
+    else {
+      setVehicles([]);
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(query.trim().toLowerCase()), 300);
     return () => clearTimeout(t);
   }, [query]);
 
+  // filtering / sorting (same as your original)
   const filtered = useMemo(() => {
     let list = vehicles.slice();
     if (debouncedQuery) {
@@ -113,7 +116,7 @@ export default function Vehicles() {
     if (filterFuel !== "All") {
       list = list.filter((v) => v.fuelType === filterFuel);
     }
-    if (sort === "name") list.sort((a,b) => a.name.localeCompare(b.name));
+    if (sort === "name") list.sort((a,b) => (a.name||"").localeCompare(b.name||""));
     if (sort === "year") list.sort((a,b) => (b.modelYear||0) - (a.modelYear||0));
     if (sort === "newest") list.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
     return list;
@@ -126,28 +129,85 @@ export default function Vehicles() {
   const startIdx = (page - 1) * pageSize;
   const pageItems = filtered.slice(startIdx, startIdx + pageSize);
 
-  /* handlers */
-  const handleOpenAdd = () => { setFormInitial(null); setFormOpen(true); };
-  const handleSaveVehicle = (payload) => {
-    if (payload.id) {
-      setVehicles(s => s.map(v => (v.id === payload.id ? { ...v, ...payload } : v)));
-    } else {
-      const newV = { ...payload, id: "v" + Date.now(), createdAt: new Date().toISOString() };
-      setVehicles(s => [newV, ...s]);
-    }
-  };
+  // Unique fuels list (UNCONDITIONAL hook)
+  const uniqueFuels = useMemo(() => ["All", ...Array.from(new Set(vehicles.map(v => v.fuelType)))], [vehicles]);
 
+  // === end hooks ===
+
+  /* handlers (wired to backend) */
+  const handleOpenAdd = () => { setFormInitial(null); setFormOpen(true); };
   const openEdit = (v) => { setFormInitial(v); setFormOpen(true); };
   const openView = (v) => { setActiveVehicle(v); setViewOpen(true); };
   const openDelete = (v) => { setActiveVehicle(v); setDeleteOpen(true); };
 
-  const confirmDelete = (id) => {
-    setVehicles(s => s.filter(x => x.id !== id));
-    setDeleteOpen(false);
-    setActiveVehicle(null);
-  };
+  async function handleSaveVehicle(payload) {
+    try {
+      if (payload.id) {
+        const updateBody = {
+          name: payload.name,
+          make: payload.make,
+          modelYear: payload.modelYear ? Number(payload.modelYear) : undefined,
+          fuelType: payload.fuelType,
+          notes: payload.notes,
+        };
+        await updateVehicle(payload.id, updateBody);
+        if (payload.imageUrl && String(payload.imageUrl).startsWith("data:")) {
+          const file = dataURLtoFile(payload.imageUrl, `vehicle-${payload.id}.png`);
+          if (file) await uploadVehicleImage(payload.id, file);
+        } else if (payload.imageUrl && payload.imageUrl.startsWith("http")) {
+          await updateVehicle(payload.id, { imageUrl: payload.imageUrl });
+        }
+      } else {
+        const createBody = {
+          name: payload.name,
+          make: payload.make,
+          modelYear: payload.modelYear ? Number(payload.modelYear) : undefined,
+          fuelType: payload.fuelType,
+          notes: payload.notes,
+        };
+        const created = await createVehicle(createBody);
+        let createdVehicle = created;
+        if (created?.data) createdVehicle = created.data;
+        if (createdVehicle?.data) createdVehicle = createdVehicle.data;
+        const createdId = createdVehicle?._id ?? createdVehicle?.id ?? createdVehicle?._id;
+        if (createdId && payload.imageUrl && String(payload.imageUrl).startsWith("data:")) {
+          const file = dataURLtoFile(payload.imageUrl, `vehicle-${createdId}.png`);
+          if (file) await uploadVehicleImage(createdId, file);
+        } else if (createdId && payload.imageUrl && payload.imageUrl.startsWith("http")) {
+          await updateVehicle(createdId, { imageUrl: payload.imageUrl });
+        }
+      }
 
-  const uniqueFuels = useMemo(() => ["All", ...Array.from(new Set(vehicles.map(v => v.fuelType)))], [vehicles]);
+      await loadVehicles();
+    } catch (err) {
+      console.error("Save vehicle failed", err);
+      alert(err?.response?.data?.message ?? "Failed to save vehicle");
+    } finally {
+      setFormOpen(false);
+      setFormInitial(null);
+    }
+  }
+
+  async function handleConfirmDelete(id) {
+    try {
+      await deleteVehicle(id);
+      setVehicles((s) => s.filter((v) => v.id !== id));
+      setDeleteOpen(false);
+      setActiveVehicle(null);
+    } catch (err) {
+      console.error("Delete failed", err);
+      alert(err?.response?.data?.message ?? "Delete failed");
+    }
+  }
+
+  // If user is not logged in, show message (render-only, after hooks)
+  if (!user) {
+    return (
+      <div className="p-6">
+        <div className="text-sm text-[var(--muted)]">Please sign in to view your vehicles</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -183,20 +243,20 @@ export default function Vehicles() {
             </select>
           </div>
 
-          <button onClick={handleOpenAdd} className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-[var(--accent)] text-white ml-3 shadow">
+          <button onClick={() => { setFormInitial(null); setFormOpen(true); }} className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-[var(--accent)] text-white ml-3 shadow">
             Add Vehicle
           </button>
         </div>
       </div>
 
-      {/* controls row - uses HeaderControls component */}
+      {/* controls row */}
       <HeaderControls
         query={query}
         onQueryChange={(v) => { setQuery(v); setPage(1); }}
         total={total}
         pageSize={pageSize}
         onPageSizeChange={(n) => { setPageSize(n); setPage(1); }}
-        onAdd={handleOpenAdd}
+        onAdd={() => { setFormInitial(null); setFormOpen(true); }}
         uniqueFuels={uniqueFuels}
         filterFuel={filterFuel}
         setFilterFuel={(f) => { setFilterFuel(f); setPage(1); }}
@@ -218,7 +278,7 @@ export default function Vehicles() {
           <div className="py-12 text-center text-[var(--muted)]">
             <p className="text-lg font-medium mb-3">No vehicles found</p>
             <p className="text-sm mb-4">Try removing filters or add a new vehicle.</p>
-            <button onClick={handleOpenAdd} className="px-4 py-2 rounded-md bg-[var(--accent)] text-white">Add Vehicle</button>
+            <button onClick={() => { setFormInitial(null); setFormOpen(true); }} className="px-4 py-2 rounded-md bg-[var(--accent)] text-white">Add Vehicle</button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -232,18 +292,10 @@ export default function Vehicles() {
       <Pagination total={total} page={page} pageSize={pageSize} onPageChange={(p)=>setPage(p)} onPageSizeChange={(n)=>{ setPageSize(n); setPage(1); }} />
 
       {/* modals */}
-      <VehicleFormModal open={formOpen} onClose={() => setFormOpen(false)} onSave={(payload) => {
-        // if payload has id -> update; else create
-        if (payload.id) {
-          setVehicles(s => s.map(x => x.id === payload.id ? { ...x, ...payload } : x));
-        } else {
-          const newV = { ...payload, id: "v" + Date.now(), createdAt: new Date().toISOString() };
-          setVehicles(s => [newV, ...s]);
-        }
-      }} initialData={formInitial} />
+      <VehicleFormModal open={formOpen} onClose={() => setFormOpen(false)} onSave={handleSaveVehicle} initialData={formInitial} />
 
       <ViewVehicleModal open={viewOpen} onClose={() => setViewOpen(false)} vehicle={activeVehicle} />
-      <ConfirmDeleteModal open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={confirmDelete} vehicle={activeVehicle} />
+      <ConfirmDeleteModal open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={() => handleConfirmDelete(activeVehicle?.id)} vehicle={activeVehicle} />
     </div>
   );
 }

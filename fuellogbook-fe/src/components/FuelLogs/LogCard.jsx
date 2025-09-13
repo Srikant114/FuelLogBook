@@ -1,12 +1,12 @@
 // src/components/Logs/LogCard.jsx
 import React from "react";
-import { FiEye, FiTrash2 } from "react-icons/fi";
+import { FiEye, FiTrash2, FiEdit } from "react-icons/fi";
 import { formatDate } from "../../utils/helpers";
 
 /**
  * Defensive LogCard: returns null if no log provided and logs a helpful message.
  */
-export default function LogCard({ log, onView, onDelete }) {
+export default function LogCard({ log, onView, onEdit, onDelete }) {
   // Defensive: don't crash if log is undefined
   if (!log) {
     // eslint-disable-next-line no-console
@@ -65,6 +65,15 @@ export default function LogCard({ log, onView, onDelete }) {
           title="View"
         >
           <FiEye /> View
+        </button>
+
+        {/* Edit button (new) */}
+        <button
+          onClick={() => onEdit?.(log)}
+          className="flex items-center gap-2 px-3 py-2 rounded-md bg-white border hover:bg-[var(--hover-bg)] text-sm"
+          title="Edit"
+        >
+          <FiEdit /> Edit
         </button>
 
         <button

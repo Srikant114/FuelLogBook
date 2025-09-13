@@ -31,8 +31,8 @@ app.use(passport.initialize());
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL, // allow frontend origin
-  credentials: true, // allow cookies
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
 }));
 app.use(express.json());
 app.use(cookieParser()); // ✅ parse cookies

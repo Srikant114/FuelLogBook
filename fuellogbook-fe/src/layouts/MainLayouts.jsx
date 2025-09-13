@@ -1,18 +1,18 @@
+// src/layouts/MainLayout.jsx
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import { useAuth } from "../contexts/AuthContext";
+import AuthModal from "../components/Auth/AuthModal";
 
-/**
- * MainLayout wraps pages and provides:
- * - sidebar that can collapse (compact width)
- * - topbar with theme toggle + hamburger for mobile
- */
 export default function MainLayout({ children, pageTitle }) {
   const [collapsed, setCollapsed] = useState(false); // desktop collapse
   const [mobileOpen, setMobileOpen] = useState(false); // mobile drawer
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem("theme") === "dark"
   );
+
+  const { user, loading } = useAuth();
 
   const toggleCollapse = () => setCollapsed((s) => !s);
   const toggleMobile = () => setMobileOpen((s) => !s);
@@ -34,10 +34,7 @@ export default function MainLayout({ children, pageTitle }) {
       {/* Mobile sidebar overlay */}
       <div className={`lg:hidden ${mobileOpen ? "block" : "hidden"}`}>
         <div className="fixed inset-0 z-40">
-          <div
-            className="absolute inset-0 bg-black/30"
-            onClick={toggleMobile}
-          />
+          <div className="absolute inset-0 bg-black/30" onClick={toggleMobile} />
           <div className="absolute left-0 top-0 bottom-0 w-64 z-50">
             <Sidebar collapsed={false} onCollapseToggle={toggleMobile} />
           </div>
@@ -56,6 +53,9 @@ export default function MainLayout({ children, pageTitle }) {
           <div className="max-w-7xl mx-auto p-6">{children}</div>
         </main>
       </div>
+
+      {/* Show auth modal if not authenticated */}
+      {!loading && !user && <AuthModal open={true} />}
     </div>
   );
 }

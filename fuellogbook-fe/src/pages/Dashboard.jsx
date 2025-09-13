@@ -14,6 +14,8 @@ import {
 import { FiPlus, FiEye, FiDownload } from "react-icons/fi";
 import { formatDate, computeLitres } from "../utils/helpers";
 
+import { getAllVehicles } from "../api/vehicles";
+
 /**
  * Dashboard page
  * - lightweight sample data (replace with API)
@@ -82,15 +84,28 @@ export default function Dashboard() {
 
   // load sample data (simulate fetch)
   useEffect(() => {
+    let mounted = true;
     setLoading(true);
-    const t = setTimeout(() => {
-      setVehicles(sampleVehicles);
-      // compute litres for each sample log
-      const enriched = sampleLogs.map((l) => ({ ...l, litres: computeLitres(l.amount, l.pricePerL) }));
-      setLogs(enriched);
-      setLoading(false);
-    }, 240);
-    return () => clearTimeout(t);
+
+    async function load() {
+      try {
+        // fetch all vehicles
+        const resp = await getAllVehicles();
+        // your backend responds with { success: true, data: vehicles } or similar.
+        // Try both shapes:
+        const vehiclesArr = resp?.data ?? resp?.vehicles ?? resp?.data?.vehicles ?? resp;
+        if (mounted) {
+          setVehicles(Array.isArray(vehiclesArr) ? vehiclesArr : (vehiclesArr?.rows ?? []));
+        }
+      } catch (err) {
+        console.error("Error fetching vehicles:", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    load();
+    return () => { mounted = false; };
   }, []);
 
   // Quick summary metrics
