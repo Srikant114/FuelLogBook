@@ -138,7 +138,7 @@ const NavbarUser = () => {
           }}
           className="px-4 py-2 border rounded-md transition"
         >
-          Sign in
+          <Link to="/login">Sign in</Link>
         </button>
 
         <button
