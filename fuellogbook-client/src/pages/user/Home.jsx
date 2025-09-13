@@ -3,6 +3,7 @@ import NavbarUser from '../../components/user/NavbarUser'
 import HeroSection from '../../components/user/HeroSection'
 import FeaturesSection from '../../components/user/FeaturesSection'
 import PricingSection from '../../components/user/PricingSection'
+import FAQSection from '../../components/user/FAQSection'
 
 const Home = () => {
   return (
@@ -11,6 +12,7 @@ const Home = () => {
         <HeroSection/>
         <FeaturesSection/>
         <PricingSection/>
+        <FAQSection/>
     </>
   )
 }
