@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { MenuIcon, XIcon } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FLBLogoLight, FLBLogoDark } from "../../assets/index";
 import { navLinks } from "../../data/navLinks";
 import ThemeToggle from "../../utils/ThemeToggle";
@@ -9,6 +9,7 @@ import { useThemeContext } from "../../context/ThemeContext";
 const NavbarUser = () => {
   const { theme } = useThemeContext();
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (openMobileMenu) {
@@ -18,34 +19,53 @@ const NavbarUser = () => {
     }
   }, [openMobileMenu]);
 
+  // Smooth scroll handler
+  const handleScroll = (e, href) => {
+    e.preventDefault();
+
+    if (href === "/") {
+      // Scroll to top smoothly
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (href.startsWith("#")) {
+      const sectionId = href.replace("#", "");
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      navigate(href); // fallback for external or other routes
+    }
+
+    setOpenMobileMenu(false);
+  };
+
   return (
     <nav
       className={`flex items-center justify-between fixed z-50 top-0 w-full px-6 md:px-16 lg:px-24 xl:px-32 py-4 ${
         openMobileMenu ? "" : "backdrop-blur"
       }`}
     >
-      <Link href="/">
+      <a href="/" onClick={(e) => handleScroll(e, "/")}>
         <img
-          className="h-9 md:h-9.5 w-auto shrink-0"
+          className="h-9 md:h-13 w-auto shrink-0"
           width={140}
           height={40}
-          priority
-          fetchPriority="high"
           src={theme === "light" ? FLBLogoLight : FLBLogoDark}
           alt="logo"
         />
-      </Link>
+      </a>
 
       {/* Desktop Links */}
       <div className="hidden items-center md:gap-8 lg:gap-9 md:flex lg:pl-20">
         {navLinks?.map((link) => (
-          <Link
+          <a
             key={link?.name}
             href={link?.href}
+            onClick={(e) => handleScroll(e, link?.href)}
             className="transition hover:text-[var(--color-primary)] dark:hover:text-[var(--color-primary-light)]"
           >
             {link?.name}
-          </Link>
+          </a>
         ))}
       </div>
 
@@ -70,7 +90,8 @@ const NavbarUser = () => {
             backgroundColor: "var(--color-primary)",
           }}
           onMouseOver={(e) =>
-            (e.currentTarget.style.backgroundColor = "var(--color-primary-dark)")
+            (e.currentTarget.style.backgroundColor =
+              "var(--color-primary-dark)")
           }
           onMouseOut={(e) =>
             (e.currentTarget.style.backgroundColor = "var(--color-primary)")
@@ -97,13 +118,14 @@ const NavbarUser = () => {
         }`}
       >
         {navLinks?.map((link) => (
-          <Link
+          <a
             key={link?.name}
             href={link?.href}
+            onClick={(e) => handleScroll(e, link?.href)}
             className="transition hover:text-[var(--color-primary)] dark:hover:text-[var(--color-primary-light)]"
           >
             {link?.name}
-          </Link>
+          </a>
         ))}
 
         <button
@@ -121,7 +143,8 @@ const NavbarUser = () => {
           className="aspect-square size-10 p-1 items-center justify-center rounded-md flex text-white"
           style={{ backgroundColor: "var(--color-primary)" }}
           onMouseOver={(e) =>
-            (e.currentTarget.style.backgroundColor = "var(--color-primary-dark)")
+            (e.currentTarget.style.backgroundColor =
+              "var(--color-primary-dark)")
           }
           onMouseOut={(e) =>
             (e.currentTarget.style.backgroundColor = "var(--color-primary)")

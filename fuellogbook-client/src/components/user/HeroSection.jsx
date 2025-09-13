@@ -19,7 +19,7 @@ const HeroSection = () => {
     <div className="flex flex-col items-center justify-center text-center px-4 bg-[url('/light-hero-gradient.svg')] dark:bg-[url('/dark-hero-gradient.svg')] bg-no-repeat bg-cover">
 
       {/* Small community banner */}
-      <div className="flex flex-wrap items-center justify-center gap-3 p-1.5 pr-4 mt-46 rounded-full border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-600/20">
+      <div className="flex flex-wrap items-center justify-center gap-3 p-1.5 pr-4 mt-36 rounded-full border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-600/20">
         <div className='flex items-center -space-x-3'>
           <img className="size-7 rounded-full" src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=50" alt="user1" />
           <img className="size-7 rounded-full" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=50" alt="user2" />
@@ -57,7 +57,7 @@ const HeroSection = () => {
       </div>
 
       {/* Brands/Logos */}
-      <h3 className="text-base text-center text-theme-light mt-28 pb-14 font-medium">
+      <h3 className="text-base text-center text-theme-light mt-18 pb-14 font-medium">
         Trusted by leading brands —
       </h3>
       <Marquee
