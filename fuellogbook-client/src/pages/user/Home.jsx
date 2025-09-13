@@ -5,6 +5,7 @@ import FeaturesSection from '../../components/user/FeaturesSection'
 import PricingSection from '../../components/user/PricingSection'
 import FAQSection from '../../components/user/FAQSection'
 import SalesSection from '../../components/user/SalesSection'
+import FooterUser from '../../components/user/FooterUser'
 
 const Home = () => {
   return (
@@ -15,6 +16,7 @@ const Home = () => {
         <PricingSection/>
         <FAQSection/>
         <SalesSection/>
+        <FooterUser/>
     </>
   )
 }
