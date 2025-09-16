@@ -47,22 +47,25 @@ const FAQSection = () => {
                   openIndex === index ? "rotate-180" : ""
                 }`}
                 style={{
-                  color: openIndex === index ? "var(--color-primary)" : "inherit",
+                  color:
+                    openIndex === index ? "var(--color-primary)" : "inherit",
                 }}
               />
             </div>
 
             <AnimatePresence>
               {openIndex === index && (
-                <motion.p
-                  initial={{ opacity: 0, height: 0, y: -5 }}
-                  animate={{ opacity: 1, height: "auto", y: 0 }}
-                  exit={{ opacity: 0, height: 0, y: -5 }}
-                  transition={{ duration: 0.5 }}
-                  className="text-sm text-slate-600 dark:text-slate-300 pt-4 overflow-hidden"
+                <motion.div
+                  initial={{ opacity: 0, maxHeight: 0 }}
+                  animate={{ opacity: 1, maxHeight: 500 }} // pick a safe max height
+                  exit={{ opacity: 0, maxHeight: 0 }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  className="overflow-hidden"
                 >
-                  {faq.answer}
-                </motion.p>
+                  <p className="text-sm text-slate-600 dark:text-slate-300 pt-4">
+                    {faq.answer}
+                  </p>
+                </motion.div>
               )}
             </AnimatePresence>
           </motion.div>

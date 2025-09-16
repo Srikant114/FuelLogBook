@@ -65,7 +65,7 @@ const FooterUser = () => {
             />
           </a>
           <p className="mt-4 text-sm sm:text-base md:text-base text-slate-600 dark:text-slate-300">
-            FuelLogBook helps you track your fuel, calculate mileage, and generate
+            RideLogz helps you track your fuel, calculate mileage, and generate
             detailed reports for smarter driving and vehicle management.
           </p>
         </div>
@@ -95,7 +95,7 @@ const FooterUser = () => {
             <h2 className="font-semibold mb-3 sm:mb-5 text-base sm:text-lg">Get in touch</h2>
             <div className="space-y-2 text-sm sm:text-base">
               <p>+91-98765-43210</p>
-              <p>support@fuellogbook.com</p>
+              <p>support@ridelogz.com</p>
             </div>
           </div>
         </div>
@@ -115,7 +115,7 @@ const FooterUser = () => {
           onClick={(e) => handleScroll(e, "/")}
           className="text-[var(--color-primary)] ms-2"
         >
-          FuelLogBook
+          RideLogz
         </a>
         . All Rights Reserved.
       </motion.p>
