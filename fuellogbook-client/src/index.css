@@ -93,3 +93,24 @@ button {
 .bg-gradient-dark { background-image: var(--gradient-dark); }
 .bg-clip-text { -webkit-background-clip: text; background-clip: text; }
 .text-transparent { color: transparent; }
+
+
+/* helper used by new layout - no hard-coded colors */
+.text-primary-active {
+  color: var(--color-primary);
+}
+
+/* reduce scrollbar visual noise in sidebar */
+aside nav::-webkit-scrollbar {
+  width: 8px;
+}
+aside nav::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.06);
+  border-radius: 999px;
+}
+
+/* ensure focus visible */
+button:focus, a:focus {
+  outline: 2px solid rgba(146,63,239,0.18);
+  outline-offset: 2px;
+}
