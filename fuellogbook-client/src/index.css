@@ -17,7 +17,9 @@ button {
     @apply cursor-pointer;
 }
 
-/* CSS Variables for Theme */
+/* -----------------------------
+   CSS Variables for Theme
+   ----------------------------- */
 :root {
   /* Primary Theme Colors */
   --color-primary: #923FEF;
@@ -33,6 +35,9 @@ button {
   --color-text-light: #6b7280; /* slate-500 */
   --color-bg: #ffffff;
   --color-bg-dark: #0f172a; /* slate-900 */
+
+  /* placeholder (light default) */
+  --placeholder: rgba(55,65,81,0.45); /* slate-600-ish for light mode */
 
   /* Gradients */
   --gradient-primary: linear-gradient(
@@ -52,6 +57,87 @@ button {
   --color-bg: #0f172a;
   --color-text: #f8fafc; /* slate-50 */
   --color-text-light: #cbd5e1; /* slate-300 */
+
+  /* placeholder for dark mode (soft) */
+  --placeholder: rgba(148,163,184,0.35);
+}
+
+/* -----------------------------
+   Global Placeholder & Form Controls
+   ----------------------------- */
+
+/* Apply placeholder color globally (inputs, textarea, selects) */
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: var(--placeholder);
+  opacity: 1; /* keep consistent across browsers */
+}
+
+/* IE/Edge placeholder support */
+:-ms-input-placeholder { color: var(--placeholder); }
+::-ms-input-placeholder { color: var(--placeholder); }
+
+/* Form controls should follow theme colors for text/background */
+input,
+select,
+textarea,
+button {
+  color: var(--color-text);            /* primary text color */
+  background-color: var(--color-bg);   /* control background uses page background token */
+}
+
+/* Stronger defaults for form controls (readable in dark mode) */
+input,
+select,
+textarea {
+  caret-color: var(--color-primary);          /* visible caret */
+  -webkit-text-fill-color: var(--color-text);/* Safari specific */
+  border-color: rgba(148,163,184,0.12);      /* subtle default border */
+  box-sizing: border-box;
+}
+
+/* Slightly stronger control border in light mode for contrast */
+@media (prefers-color-scheme: light) {
+  input, select, textarea {
+    border-color: rgba(15,23,42,0.06);
+  }
+}
+
+/* Focus styles keep accessibility but softened */
+input:focus, select:focus, textarea:focus, button:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(146,63,239,0.08);
+  border-color: var(--color-primary);
+}
+
+/* Select normalization so selected text uses theme color and native bg doesn't clash */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+  color: var(--color-text);
+}
+
+/* Ensure text inside form controls also updates in dark mode (guard against hard-coded classes) */
+.input-theme,
+select.input-theme,
+textarea.input-theme {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* -----------------------------
+   Hide native scrollbars (visually)
+   ----------------------------- */
+/* Use .no-scrollbar on scrollable containers to hide scrollbars */
+.no-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 /* -----------------------------
@@ -94,10 +180,32 @@ button {
 .bg-clip-text { -webkit-background-clip: text; background-clip: text; }
 .text-transparent { color: transparent; }
 
-
 /* helper used by new layout - no hard-coded colors */
 .text-primary-active {
   color: var(--color-primary);
+}
+
+/* -----------------------------
+   Misc helpers / inputs / focus
+   ----------------------------- */
+
+/* ensure focus visible for links/buttons */
+button:focus, a:focus {
+  outline: 2px solid rgba(146,63,239,0.18);
+  outline-offset: 2px;
+}
+
+/* small utility for boxed inputs you may reuse */
+.input-box {
+  @apply rounded-md px-3 py-2 border;
+  border-color: rgba(148,163,184,0.12);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* subtle card border in dark mode (used for VehicleCard panel) */
+.dark .card-border-subtle {
+  border: 1px solid rgba(148,163,184,0.06);
 }
 
 /* reduce scrollbar visual noise in sidebar */
@@ -109,8 +217,47 @@ aside nav::-webkit-scrollbar-thumb {
   border-radius: 999px;
 }
 
-/* ensure focus visible */
-button:focus, a:focus {
-  outline: 2px solid rgba(146,63,239,0.18);
-  outline-offset: 2px;
+/* -----------------------------
+   Modal specific adjustments (helpers)
+   ----------------------------- */
+
+/* modal panel inner body class to allow scroll while hiding scrollbar */
+.modal-body {
+  max-height: 85vh;
+  overflow-y: auto;
 }
+
+/* hide scrollbars visually for modal body */
+.modal-body.no-scrollbar {
+  scrollbar-width: none;
+}
+.modal-body.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ensure modal contents don't overflow horizontally */
+.modal-body * {
+  box-sizing: border-box;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+/* -----------------------------
+   Small responsive helpers
+   ----------------------------- */
+
+/* make images inside forms responsive */
+.form-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* center small icons with text */
+.icon-inline {
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* end of file */
