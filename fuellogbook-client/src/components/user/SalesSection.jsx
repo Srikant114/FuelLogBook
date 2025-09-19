@@ -1,8 +1,10 @@
 import React from "react";
 import TitleUser from "../common/TitleUser";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const SalesSection = () => {
+  const navigate = useNavigate()
   return (
     <div className="flex flex-col items-center text-center justify-center mt-20 px-4 md:px-0">
       <motion.div
@@ -25,7 +27,10 @@ const SalesSection = () => {
         viewport={{ once: true }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-        <button className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] transition text-white rounded-md px-6 h-11">
+         <button
+          onClick={() => navigate("/admin")}
+          className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] transition text-white rounded-md px-6 h-11"
+        >
           Start free trial
         </button>
         <button className="border border-[var(--color-primary-dark)] transition text-slate-600 dark:text-white rounded-md px-6 h-11">
