@@ -1,4 +1,4 @@
-import { LayoutDashboard, Fuel, Car, FileBarChart, Users } from "lucide-react";
+import { LayoutDashboard, Fuel, Car, FileBarChart, Users, Podcast } from "lucide-react";
 
 export const navLinks = [
   {
@@ -39,6 +39,11 @@ export const adminNavLinks = [
     name: "Report",
     href: "/admin/report",
     icon: FileBarChart,
+  },
+  {
+    name:"Subscriptions",
+    href:"/admin/subscriptions",
+    icon: Podcast,
   },
   {
     name: "Users",

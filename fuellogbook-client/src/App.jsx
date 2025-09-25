@@ -8,6 +8,7 @@ import FuelLogs from "./pages/admin/FuelLogs";
 import Vehicles from "./pages/admin/Vehicles";
 import Report from "./pages/admin/Report";
 import Users from "./pages/admin/Users";
+import Subscriptions from "./pages/admin/Subscriptions";
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
           <Route path="fuel-logs" element={<FuelLogs />} />
           <Route path="vehicles" element={<Vehicles />} />
           <Route path="report" element={<Report />} />
+          <Route path="subscriptions" element={<Subscriptions />} />
           <Route path="users" element={<Users />} />
         </Route>
 
