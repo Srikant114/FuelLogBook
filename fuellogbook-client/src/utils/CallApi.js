@@ -2,7 +2,7 @@
 // Centralized fetch wrapper that prefixes a BASE_URL (configurable via REACT_APP_API_URL)
 // Usage: api.post("/api/auth/register", payload)
 
-const BASE = (typeof process !== "undefined" && process.env.REACT_APP_API_URL) || "http://localhost:5000";
+const BASE = (typeof process !== "undefined" && process.env.REACT_APP_API_URL) ;
 
 const defaultHeaders = () => ({
   "Content-Type": "application/json",
