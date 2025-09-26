@@ -85,8 +85,8 @@ async function compressImage(file, { maxWidth = 1200, maxHeight = 1200, quality 
 }
 /* ------------------------------------------------ */
 
-const BASE = (typeof process !== "undefined" && process.env.REACT_APP_API_URL) || "http://localhost:5000";
-const CHECK_USERNAME_URL = (username) => `${BASE}/api/auth/check-username?username=${encodeURIComponent(username)}`;
+
+const CHECK_USERNAME_URL = (username) => `/api/auth/check-username?username=${encodeURIComponent(username)}`;
 
 const Register = () => {
   const { theme } = useThemeContext();
@@ -226,7 +226,7 @@ const Register = () => {
       const controller = new AbortController();
       usernameAbortRef.current = controller;
 
-      fetch(CHECK_USERNAME_URL(username), { signal: controller.signal })
+      api.get(CHECK_USERNAME_URL(username), { rawResponse: false, headers: {}, query: null })
         .then(async (res) => {
           if (!res.ok) {
             const text = await res.text().catch(() => "");
