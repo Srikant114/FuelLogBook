@@ -48,18 +48,20 @@ export const deleteVehicleImage = async (req, res) => {
 
 // 🔹 Helper for consistent error handling
 const handleError = (res, error, status = 500) => {
+  console.log(error.message); 
+
   res.status(status).json({
     success: false,
-    message: error.message || "Something went wrong"
+    message: "Something went wrong",
+    error: error.message,
   });
 };
-
 // 🔹 Create Vehicle (linked to logged-in user)
 export const createVehicle = async (req, res) => {
   try {
     const { name } = req.body;
     if (!name) {
-      return res.status(400).json({ success: false, message: "❌ Vehicle name is required" });
+      return res.status(400).json({ success: false, message: "Vehicle name is required" });
     }
 
     const vehicle = new Vehicle({
@@ -71,7 +73,7 @@ export const createVehicle = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "✅ Vehicle created successfully",
+      message: "Vehicle created successfully",
       data: vehicle
     });
   } catch (error) {
@@ -82,7 +84,7 @@ export const createVehicle = async (req, res) => {
 // 🔹 Get all Vehicles for logged-in user
 export const getVehicles = async (req, res) => {
   try {
-    const vehicles = await Vehicle.find({ userId: req.user.id });
+    const vehicles = await Vehicle.find({ userId: req.user.id }).sort({ createdAt: -1 });
     res.status(200).json({
       success: true,
       count: vehicles.length,
@@ -102,7 +104,7 @@ export const getVehicleById = async (req, res) => {
     });
 
     if (!vehicle) {
-      return res.status(404).json({ success: false, message: "❌ Vehicle not found or not yours" });
+      return res.status(404).json({ success: false, message: "Vehicle not found or not yours" });
     }
 
     res.status(200).json({ success: true, data: vehicle });
@@ -121,12 +123,12 @@ export const updateVehicle = async (req, res) => {
     );
 
     if (!vehicle) {
-      return res.status(404).json({ success: false, message: "❌ Vehicle not found or not yours" });
+      return res.status(404).json({ success: false, message: " Vehicle not found or not yours" });
     }
 
     res.status(200).json({
       success: true,
-      message: "✅ Vehicle updated successfully",
+      message: "Vehicle updated successfully",
       data: vehicle
     });
   } catch (error) {
@@ -143,12 +145,12 @@ export const deleteVehicle = async (req, res) => {
     });
 
     if (!vehicle) {
-      return res.status(404).json({ success: false, message: "❌ Vehicle not found or not yours" });
+      return res.status(404).json({ success: false, message: " Vehicle not found or not yours" });
     }
 
     res.status(200).json({
       success: true,
-      message: "✅ Vehicle deleted successfully"
+      message: "Vehicle deleted successfully"
     });
   } catch (error) {
     handleError(res, error);
