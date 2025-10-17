@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Edit3, Trash2 } from "lucide-react";
 
 const VehicleCard = ({ vehicle, onEdit, onDelete }) => {
-  const [tilt, setTilt] = React.useState({ x: 0, y: 0 });
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const threshold = 12;
 
   const handleMove = (e) => {
@@ -11,6 +11,14 @@ const VehicleCard = ({ vehicle, onEdit, onDelete }) => {
     const y = (e.clientY - top) / height - 0.5;
     setTilt({ x: y * -threshold, y: x * threshold });
   };
+
+    const truncateNotes = (text, wordLimit = 15) => {
+    if (!text) return "No notes available.";
+    const words = text.trim().split(/\s+/);
+    if (words.length <= wordLimit) return text;
+    return words.slice(0, wordLimit).join(" ") + "...";
+  };
+
 
   return (
     <div
@@ -59,7 +67,7 @@ const VehicleCard = ({ vehicle, onEdit, onDelete }) => {
             className="w-full h-full object-cover"
             onError={(e) => {
               e.currentTarget.src =
-                "https://images.unsplash.com/photo-1542365887-87b1b3d4d6d2?q=80&w=2000&auto=format&fit=crop";
+                "https://res.cloudinary.com/dkysfzs5s/image/upload/v1760711986/fuelLogbook/vehicles/bs0fag07njj1ltktu7tf.png";
             }}
           />
         </div>
@@ -81,7 +89,7 @@ const VehicleCard = ({ vehicle, onEdit, onDelete }) => {
           </div>
 
           <p className="mt-3 text-sm text-theme-light dark:text-theme-light">
-            {vehicle.notes || "No notes available."}
+             {truncateNotes(vehicle.notes)}
           </p>
         </div>
       </div>
