@@ -2,6 +2,7 @@
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import Loader from "../common/Loader";
 
 /**
  * ProtectedRoute
@@ -14,9 +15,7 @@ const ProtectedRoute = ({ children, redirectTo = "/login" }) => {
   // while verifying token on app load, render a small placeholder
   if (loading) {
     return (
-      <div className="w-full h-full grid place-items-center">
-        <div className="animate-pulse text-theme-light dark:text-theme-light">Checking authentication…</div>
-      </div>
+      <Loader />
     );
   }
 
