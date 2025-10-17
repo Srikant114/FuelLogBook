@@ -191,78 +191,79 @@ const Register = () => {
   };
 
   // username availability check (debounced + abortable)
-  useEffect(() => {
-    const username = (form.username || "").trim();
+useEffect(() => {
+  const username = (form.username || "").trim();
 
-    // reset if empty or too short
-    if (!username || username.length < 3) {
-      if (usernameDebounceRef.current) {
-        clearTimeout(usernameDebounceRef.current);
-        usernameDebounceRef.current = null;
-      }
-      if (usernameAbortRef.current) {
-        usernameAbortRef.current.abort();
-        usernameAbortRef.current = null;
-      }
-      setUsernameStatus("idle");
-      lastCheckedRef.current = "";
-      return;
+  // reset if empty or too short
+  if (!username || username.length < 3) {
+    if (usernameDebounceRef.current) {
+      clearTimeout(usernameDebounceRef.current);
+      usernameDebounceRef.current = null;
+    }
+    if (usernameAbortRef.current) {
+      usernameAbortRef.current.abort();
+      usernameAbortRef.current = null;
+    }
+    setUsernameStatus("idle");
+    lastCheckedRef.current = "";
+    return;
+  }
+
+  // prevent re-checking the same username
+  if (username === lastCheckedRef.current) return;
+
+  // clear existing debounce timer
+  if (usernameDebounceRef.current) clearTimeout(usernameDebounceRef.current);
+
+  setUsernameStatus("checking");
+
+  usernameDebounceRef.current = setTimeout(() => {
+    // abort previous request if any
+    if (usernameAbortRef.current) {
+      usernameAbortRef.current.abort();
     }
 
-    // prevent re-checking same username repeatedly
-    if (username === lastCheckedRef.current) {
-      return;
-    }
+    const controller = new AbortController();
+    usernameAbortRef.current = controller;
 
-    // clear existing debounce timer
-    if (usernameDebounceRef.current) clearTimeout(usernameDebounceRef.current);
+    api.get(CHECK_USERNAME_URL(username), {
+      rawResponse: false,
+      headers: {},
+      query: null,
+      signal: controller.signal, // 👈 pass abort signal if your api supports it
+    })
+      .then((res) => {
+        // ✅ handle both wrapped and plain responses
+        const data = res?.data || res;
 
-    setUsernameStatus("checking");
-    usernameDebounceRef.current = setTimeout(() => {
-      // abort previous request if any
-      if (usernameAbortRef.current) {
-        usernameAbortRef.current.abort();
-      }
-      const controller = new AbortController();
-      usernameAbortRef.current = controller;
-
-      api.get(CHECK_USERNAME_URL(username), { rawResponse: false, headers: {}, query: null })
-        .then(async (res) => {
-          if (!res.ok) {
-            const text = await res.text().catch(() => "");
-            throw new Error(text || `Status ${res.status}`);
-          }
-          return res.json();
-        })
-        .then((data) => {
-          if (data && typeof data.available !== "undefined") {
-            setUsernameStatus(data.available ? "available" : "taken");
-            if (data.available) lastCheckedRef.current = username;
-            else lastCheckedRef.current = "";
-          } else if (data && data.success && typeof data.available !== "undefined") {
-            setUsernameStatus(data.available ? "available" : "taken");
-            if (data.available) lastCheckedRef.current = username;
-            else lastCheckedRef.current = "";
-          } else {
-            setUsernameStatus("error");
-            lastCheckedRef.current = "";
-          }
-        })
-        .catch((err) => {
-          if (err.name === "AbortError") return;
-          console.error("Username check error:", err);
+        if (typeof data?.available !== "undefined") {
+          setUsernameStatus(data.available ? "available" : "taken");
+          lastCheckedRef.current = data.available ? username : "";
+        } else if (data?.success && typeof data?.available !== "undefined") {
+          setUsernameStatus(data.available ? "available" : "taken");
+          lastCheckedRef.current = data.available ? username : "";
+        } else {
           setUsernameStatus("error");
           lastCheckedRef.current = "";
-        })
-        .finally(() => {
-          usernameAbortRef.current = null;
-        });
-    }, 600); // 600ms debounce
+        }
+      })
+      .catch((err) => {
+        if (err.name === "AbortError") return; // ❌ ignore aborted requests
+        console.error("Username check error:", err);
+        setUsernameStatus("error");
+        lastCheckedRef.current = "";
+      })
+      .finally(() => {
+        usernameAbortRef.current = null;
+      });
+  }, 600); // ⏳ 600ms debounce
 
-    return () => {
-      if (usernameDebounceRef.current) clearTimeout(usernameDebounceRef.current);
-    };
-  }, [form.username]);
+  // cleanup on unmount or value change
+  return () => {
+    if (usernameDebounceRef.current) clearTimeout(usernameDebounceRef.current);
+  };
+}, [form.username]);
+
 
   // client-side validation
   const validate = () => {
