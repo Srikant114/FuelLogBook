@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { LoginBg } from "../../assets"; // adjust path if needed
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../../utils/CallApi";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -112,7 +112,6 @@ const Login = () => {
 
   return (
     <>
-      <Toaster position="top-right" />
 
       <motion.div
         className={`flex flex-col md:flex-row w-full min-h-screen overflow-hidden bg-theme dark:bg-theme-dark text-theme dark:text-white`}
@@ -163,7 +162,7 @@ const Login = () => {
                 type="email"
                 placeholder="Email id"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value.toLowerCase())}
                 className={`bg-transparent outline-none text-sm w-full h-full placeholder:text-[--placeholder] ${isDark ? "text-slate-200" : "text-gray-900"}`}
                 required
                 autoComplete="email"

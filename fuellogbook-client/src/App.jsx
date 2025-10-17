@@ -20,8 +20,9 @@ import MyAccount from "./pages/admin/MyAccount";
 
 const App = () => {
   return (
+    <>
+      <Toaster position="top-right" reverseOrder={false} />
     <AuthProvider>
-      <Toaster position="top-right" />
 
       <Routes>
         {/* Public pages: redirect authenticated users to /admin */}
@@ -57,6 +58,7 @@ const App = () => {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
+    </>
   );
 };
 
