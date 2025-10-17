@@ -17,6 +17,7 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import PublicRoute from "./components/auth/PublicRoute";
 import MyAccount from "./pages/admin/MyAccount";
+import { VehiclesApiProvider } from "./context/VehiclesApiContext";
 
 const App = () => {
   return (
@@ -38,7 +39,9 @@ const App = () => {
           element={
             // ProtectedRoute wraps the AdminLayout; children (nested routes) will render inside AdminLayout's Outlet
             <ProtectedRoute>
+              <VehiclesApiProvider>
               <AdminLayout />
+              </VehiclesApiProvider>
             </ProtectedRoute>
           }
         >

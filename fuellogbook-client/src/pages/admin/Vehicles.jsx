@@ -1,29 +1,29 @@
+// src/pages/admin/Vehicles.jsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import TitleAdmin from "../../components/common/TitleAdmin"; 
+import TitleAdmin from "../../components/common/TitleAdmin";
 import VehicleCard from "../../components/admin/VehicleCard";
 import Pagination from "../../components/admin/Pagination";
 import { PlusCircle } from "lucide-react";
 import Modal from "../../components/admin/Modal";
 import VehicleForm from "../../components/admin/VehicleForm";
 import ConfirmDelete from "../../components/admin/ConfirmDelete";
-import {api} from "../../utils/CallApi"
+import { useVehiclesApi } from "../../context/VehiclesApiContext"; // <- use context hook
 import toast from "react-hot-toast";
 
-
 /**
- * Vehicles page (connected to backend)
+ * Vehicles page (connected to backend via VehiclesApiContext)
  *
- * Backend endpoints used:
- * - GET  /api/vehicles/get-all-vehicles
- * - POST /api/vehicles/add-vehicle
- * - PUT  /api/vehicles/update-vehicle/:id
- * - DELETE /api/vehicles/delete-vehicle/:id
- * - PUT  /api/vehicles/upload-image/:id   (expects FormData with "image")
+ * Backend endpoints used (through context):
+ * - getAllVehicles()
+ * - addVehicle()
+ * - updateVehicle()
+ * - deleteVehicle()
+ * - uploadImage()
  *
  * Notes:
  * - VehicleForm returns a payload object that may include `imageFile` (File).
  * - After creating/updating we will upload the image (if provided) and then refresh the list.
- * - Pagination is client-side (pageSize = 12). You can switch to server-side later by passing page params to the backend.
+ * - Pagination is client-side (pageSize = 12).
  */
 
 const Vehicles = () => {
@@ -36,18 +36,22 @@ const Vehicles = () => {
 
   // Modal states
   const [openAddEdit, setOpenAddEdit] = useState(false);
-  const [editing, setEditing] =useState(null); // vehicle object or null
+  const [editing, setEditing] = useState(null); // vehicle object or null
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [toDelete, setToDelete] = useState(null);
 
-    // fetch vehicles for the current user
+  // get api from context
+  const vehiclesApi = useVehiclesApi();
+
+  // fetch vehicles for the current user
   const fetchVehicles = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get("/api/vehicles/get-all-vehicles");
+      // request all vehicles; adapt query if needed (page / pageSize)
+      const res = await vehiclesApi.getAllVehicles();
       if (res && res.success) {
+        // backend uses res.data for list (keeps legacy behavior)
         setVehicles(Array.isArray(res.data) ? res.data : res.data || []);
-        // reset page if needed
         setCurrentPage(1);
       } else {
         toast.error(res?.message || "Failed to load vehicles");
@@ -58,15 +62,13 @@ const Vehicles = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [vehiclesApi]);
 
-    useEffect(() => {
+  useEffect(() => {
     fetchVehicles();
   }, [fetchVehicles]);
 
-
-
- // Pagination helpers
+  // Pagination helpers
   const totalPages = Math.max(1, Math.ceil(vehicles.length / PAGE_SIZE));
   const visibleVehicles = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
@@ -82,8 +84,8 @@ const Vehicles = () => {
          imageUrl: string (preview or existing)
        }
   ------------------------- */
-  
- // open Add modal
+
+  // open Add modal
   const handleOpenAdd = () => {
     setEditing(null);
     setOpenAddEdit(true);
@@ -99,9 +101,7 @@ const Vehicles = () => {
   const uploadVehicleImage = async (vehicleId, file) => {
     if (!file) return null;
     try {
-      const fd = new FormData();
-      fd.append("image", file);
-      const res = await api.put(`/api/vehicles/upload-image/${vehicleId}`, fd);
+      const res = await vehiclesApi.uploadImage(vehicleId, file);
       if (res && res.success) return res.vehicle || res.data || res;
       throw new Error(res?.message || "Image upload failed");
     } catch (err) {
@@ -111,19 +111,20 @@ const Vehicles = () => {
     }
   };
 
-// handle add or edit submit (per form)
+  // handle add or edit submit (per form)
   const handleAddEditSubmit = async (payload) => {
     // payload contains form fields + imageFile (File) + imageUrl (string)
     try {
       if (editing) {
         // UPDATE flow
-        const res = await api.put(`/api/vehicles/update-vehicle/${editing._id || editing.id}`, {
+        const id = editing._id || editing.id;
+        const res = await vehiclesApi.updateVehicle(id, {
           name: payload.name,
           make: payload.make,
           modelYear: payload.modelYear,
           fuelType: payload.fuelType,
           notes: payload.notes,
-          imageUrl: payload.imageUrl || undefined, // optionally update direct url
+          imageUrl: payload.imageUrl || undefined,
         });
 
         if (!res || !res.success) {
@@ -133,19 +134,19 @@ const Vehicles = () => {
 
         // if imageFile present, upload it
         if (payload.imageFile) {
-          await uploadVehicleImage(res.data._id || res.data.id || editing._id || editing.id, payload.imageFile);
+          await uploadVehicleImage(res.data._id || res.data.id || id, payload.imageFile);
         }
 
         toast.success(res.message || "Vehicle updated");
       } else {
         // CREATE flow
-        const res = await api.post("/api/vehicles/add-vehicle", {
+        const res = await vehiclesApi.addVehicle({
           name: payload.name,
           make: payload.make,
           modelYear: payload.modelYear,
           fuelType: payload.fuelType,
           notes: payload.notes,
-          imageUrl: payload.imageUrl || undefined, // optional
+          imageUrl: payload.imageUrl || undefined,
         });
 
         if (!res || !res.success) {
@@ -184,7 +185,7 @@ const Vehicles = () => {
     if (!toDelete) return;
     try {
       const id = toDelete._id || toDelete.id;
-      const res = await api.del(`/api/vehicles/delete-vehicle/${id}`);
+      const res = await vehiclesApi.deleteVehicle(id);
       if (!res || !res.success) {
         toast.error(res?.message || "Delete failed");
         return;
@@ -193,7 +194,7 @@ const Vehicles = () => {
       setDeleteOpen(false);
       setToDelete(null);
 
-      // refresh list (or optimistically remove)
+      // refresh list
       await fetchVehicles();
     } catch (err) {
       console.error("delete vehicle error:", err);
@@ -202,7 +203,7 @@ const Vehicles = () => {
   };
 
   return (
-     <div className="px-4 pt-4 md:px-10 flex-1">
+    <div className="px-4 pt-4 md:px-10 flex-1">
       <TitleAdmin
         title="Vehicles"
         subTitle="Monitor fleet fuel efficiency, trip costs, maintenance schedules and recent activities."
@@ -281,7 +282,6 @@ const Vehicles = () => {
         />
       </Modal>
     </div>
-
   );
 };
 
