@@ -44,24 +44,6 @@ export async function createLog(req, res) {
   }
 }
 
-// // GET ALL LOGS for a vehicle
-// export async function getLogs(req, res) {
-//   try {
-//     const { vehicleId } = req.params;
-
-//     const vehicle = await Vehicle.findOne({ _id: vehicleId, userId: req.user.id });
-//     if (!vehicle) {
-//       return res.status(404).json({ success: false, message: "❌ Vehicle not found or not owned by user" });
-//     }
-
-//     const logs = await Log.find({ vehicle: vehicleId, userId: req.user.id }).sort({ date: -1 });
-
-//     return res.status(200).json({ success: true, count: logs.length, logs });
-//   } catch (err) {
-//     console.error("getLogs error:", err);
-//     return res.status(500).json({ success: false, message: "Server error" });
-//   }
-// }
 
 /**
  * GET ALL LOGS for a vehicle with optional filters/sort
