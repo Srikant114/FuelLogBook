@@ -17,46 +17,53 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import PublicRoute from "./components/auth/PublicRoute";
 import MyAccount from "./pages/admin/MyAccount";
+import { VehiclesApiProvider } from "./context/VehiclesApiContext";
+import { LogsApiProvider } from "./context/LogsApiContext";
 
 const App = () => {
   return (
-    <AuthProvider>
-      <Toaster position="top-right" />
+    <>
+      <Toaster position="top-right" reverseOrder={false} />
+      <AuthProvider>
+        <Routes>
+          {/* Public pages: redirect authenticated users to /admin */}
+          <Route element={<PublicRoute />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Route>
 
-      <Routes>
-        {/* Public pages: redirect authenticated users to /admin */}
-        <Route element={<PublicRoute />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Route>
+          {/* Admin routes: protect the whole /admin tree */}
+          <Route
+            path="/admin"
+            element={
+              // ProtectedRoute wraps the AdminLayout; children (nested routes) will render inside AdminLayout's Outlet
+              <ProtectedRoute>
+                <VehiclesApiProvider>
+                  <LogsApiProvider>
+                    <AdminLayout />
+                  </LogsApiProvider>
+                </VehiclesApiProvider>
+              </ProtectedRoute>
+            }
+          >
+            {/* index => /admin -> Dashboard */}
+            <Route index element={<Dashboard />} />
 
-        {/* Admin routes: protect the whole /admin tree */}
-        <Route
-          path="/admin"
-          element={
-            // ProtectedRoute wraps the AdminLayout; children (nested routes) will render inside AdminLayout's Outlet
-            <ProtectedRoute>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          {/* index => /admin -> Dashboard */}
-          <Route index element={<Dashboard />} />
+            {/* nested admin routes */}
+            <Route path="fuel-logs" element={<FuelLogs />} />
+            <Route path="vehicles" element={<Vehicles />} />
+            <Route path="report" element={<Report />} />
+            <Route path="subscriptions" element={<Subscriptions />} />
+            <Route path="users" element={<Users />} />
+            <Route path="account" element={<MyAccount />} />
+          </Route>
 
-          {/* nested admin routes */}
-          <Route path="fuel-logs" element={<FuelLogs />} />
-          <Route path="vehicles" element={<Vehicles />} />
-          <Route path="report" element={<Report />} />
-          <Route path="subscriptions" element={<Subscriptions />} />
-          <Route path="users" element={<Users />} />
-          <Route path="account" element={<MyAccount />} />
-        </Route>
-
-        {/* fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </AuthProvider>
+          {/* fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
+    </>
   );
 };
 

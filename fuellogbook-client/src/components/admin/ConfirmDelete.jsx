@@ -18,11 +18,14 @@ export default function ConfirmDelete({ openItemName, onCancel, onConfirm }) {
         </svg>
       </div>
 
-      <h2 className="font-semibold mt-4 text-xl text-theme dark:text-white">Are you sure?</h2>
+      <h2 className="font-semibold mt-4 text-xl text-theme dark:text-white">
+        Are you sure?
+      </h2>
 
       <p className="text-sm mt-2 text-center text-theme-light dark:text-slate-300">
-        Do you really want to delete
-        <strong className="text-primary">{openItemName}</strong>? This action cannot be undone.
+        Do you really want to delete 
+        <strong className="text-primary">  {openItemName}</strong> ? This action
+        cannot be undone.
       </p>
 
       <div className="flex items-center justify-center gap-4 mt-5 w-full">
@@ -36,7 +39,7 @@ export default function ConfirmDelete({ openItemName, onCancel, onConfirm }) {
         <button
           type="button"
           onClick={onConfirm}
-          className="w-full md:w-36 h-10 rounded-md text-white bg-red-600 font-medium text-sm hover:bg-red-700 active:scale-95 transition"
+          className="w-full md:w-36 h-10 rounded-md !text-white !bg-red-600 font-medium text-sm hover:!bg-red-700 active:scale-95 transition"
         >
           Confirm
         </button>

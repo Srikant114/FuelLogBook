@@ -6,10 +6,21 @@ import React from "react";
  *  - currentPage (number)
  *  - totalPages (number)
  *  - onPageChange(pageNumber)
+ *  - hideWhenSingle (boolean) // default true -> hides when totalPages <= 1
  *
  * This component follows the UI you provided and is theme-friendly.
  */
-const Pagination = ({ currentPage = 1, totalPages = 1, onPageChange = () => {} }) => {
+const Pagination = ({
+  currentPage = 1,
+  totalPages = 1,
+  onPageChange = () => {},
+  hideWhenSingle = true,
+}) => {
+  // If there's nothing to paginate, hide the component (configurable)
+  if (hideWhenSingle && (!totalPages || totalPages <= 1)) {
+    return null;
+  }
+
   // Small pager generator: show up to 5 pages centered on current
   const getPages = () => {
     const pages = [];
@@ -25,6 +36,9 @@ const Pagination = ({ currentPage = 1, totalPages = 1, onPageChange = () => {} }
   };
 
   const pages = getPages();
+
+  // If pages array is empty for some reason, don't render anything
+  if (!pages.length) return null;
 
   return (
     <div className="flex items-center justify-between w-full text-theme-light dark:text-theme-light font-medium">
@@ -47,7 +61,7 @@ const Pagination = ({ currentPage = 1, totalPages = 1, onPageChange = () => {} }
             onClick={() => onPageChange(p)}
             className={`h-10 w-10 flex items-center justify-center aspect-square rounded-full ${
               p === currentPage
-                ? "text-white bg-primary border border-primary-dark"
+                ? "!text-white bg-primary border border-primary-dark"
                 : "hover:bg-slate-100/60 dark:hover:bg-white/6"
             }`}
             aria-current={p === currentPage ? "page" : undefined}

@@ -2,6 +2,7 @@
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import Loader from "../common/Loader";
 
 /**
  * PublicRoute
@@ -20,9 +21,7 @@ const PublicRoute = ({ redirectTo = "/admin" }) => {
 
   if (loading) {
     return (
-      <div className="w-full h-full grid place-items-center">
-        <div className="animate-pulse text-theme-light dark:text-theme-light">Checking authentication…</div>
-      </div>
+      <Loader />
     );
   }
 

@@ -1,0 +1,14 @@
+user 1
+---------
+Email - srikantsahu114@gmail.com
+Pass  - 123456
+
+user 2
+--------
+Email - admin1@test.com
+Pass  - qwertywsx
+
+user 3
+--------
+Email - admin2@test.com
+Pass  - qwertywsx
