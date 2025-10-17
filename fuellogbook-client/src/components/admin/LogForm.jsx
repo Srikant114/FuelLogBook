@@ -1,6 +1,6 @@
 // src/components/admin/LogForm.jsx
 import React, { useState } from "react";
-import { api } from "../../utils/CallApi";
+import { useLogsApi } from "../../context/LogsApiContext";
 import VehicleSelectDropdown from "./VehicleSelectDropdown";
 import Spinner from "../common/Spinner";
 import toast from "react-hot-toast";
@@ -20,6 +20,7 @@ import toast from "react-hot-toast";
  */
 
 export default function LogForm({ initialData = null, vehicles = [], onCancel, onSubmit }) {
+  const logsApi = useLogsApi();
   const isEdit = (initialData && (initialData._id || initialData.id));
 
   const [form, setForm] = useState(() => ({
@@ -106,7 +107,7 @@ export default function LogForm({ initialData = null, vehicles = [], onCancel, o
       if (isEdit) {
         // Update
         const logId = initialData._id || initialData.id;
-        const res = await api.put(`/api/vehicles/${form.vehicleId}/update-logs/${logId}`, payload);
+        const res = await logsApi.updateLog(form.vehicleId, logId, payload);
         if (res && res.success) {
           // server returns updated log in res.log or res.data.log
           const returned = res.log || res.data?.log || res.data || res;
@@ -119,7 +120,7 @@ export default function LogForm({ initialData = null, vehicles = [], onCancel, o
         }
       } else {
         // Create
-        const res = await api.post(`/api/vehicles/${form.vehicleId}/create-log`, payload);
+        const res = await logsApi.createLog(form.vehicleId, payload);
         if (res && res.success) {
           // server returns created log in res.log or res.data.log
           const returned = res.log || res.data?.log || res.data || res;

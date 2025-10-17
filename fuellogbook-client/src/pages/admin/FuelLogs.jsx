@@ -11,6 +11,7 @@ import Spinner from "../../components/common/Spinner";
 import { PlusCircle } from "lucide-react";
 import { api } from "../../utils/CallApi";
 import toast from "react-hot-toast";
+import { useLogsApi } from "../../context/LogsApiContext";
 
 /**
  * FuelLogs page — shows logs across vehicles (or for a selected vehicle).
@@ -58,23 +59,28 @@ export default function FuelLogs() {
     return logs.slice(start, start + PAGE_SIZE);
   }, [logs, currentPage]);
 
+  // logs api context
+  const logsApi = useLogsApi();
+
   // -----------------------------
   // Helper: fetch logs for a single vehicle
   // -----------------------------
-  const fetchLogsForVehicle = useCallback(async (vehicleId) => {
-    // Returns array of logs or [] on failure
-    try {
-      const res = await api.get(`/api/vehicles/${vehicleId}/get-logs`);
-      if (res && res.success) {
-        // backend returns { success, count, logs }
-        return Array.isArray(res.logs) ? res.logs : res.data?.logs ?? res.data?.logs ?? res.logs ?? res.data ?? [];
+  const fetchLogsForVehicle = useCallback(
+    async (vehicleId) => {
+      try {
+        const res = await logsApi.getLogs(vehicleId);
+        if (res && res.success) {
+          // backend returns { success, count, logs }
+          return Array.isArray(res.logs) ? res.logs : res.data?.logs ?? res.logs ?? [];
+        }
+        return [];
+      } catch (err) {
+        console.error("fetchLogsForVehicle error:", err);
+        return [];
       }
-      return [];
-    } catch (err) {
-      console.error("fetchLogsForVehicle error:", err);
-      return [];
-    }
-  }, []);
+    },
+    [logsApi]
+  );
 
   // -----------------------------
   // Helper: fetch all vehicles for current user (one request, used for aggregation & name mapping)
@@ -122,11 +128,9 @@ export default function FuelLogs() {
         // fetch all vehicles logs concurrently but handle per-request errors
         const promises = vehicles.map(async (v) => {
           try {
-            const res = await api.get(`/api/vehicles/${v._id || v.id}/get-logs`);
-            if (res && res.success) {
-              // backend returns { success, count, logs }
-              const list = Array.isArray(res.logs) ? res.logs : res.data?.logs ?? res.logs ?? [];
-              // attach vehicle id/name for each log so we can display in table
+            const listRes = await logsApi.getLogs(v._id || v.id);
+            if (listRes && listRes.success) {
+              const list = Array.isArray(listRes.logs) ? listRes.logs : listRes.data?.logs ?? listRes.logs ?? [];
               return list.map((log) => ({ ...log, vehicleId: v._id || v.id, vehicleName: v.name }));
             }
             return [];
@@ -147,7 +151,7 @@ export default function FuelLogs() {
         // fetch logs for that vehicle and also fetch vehicle info for mapping
         const [vehicleRes, logsRes] = await Promise.allSettled([
           api.get(`/api/vehicles/get-vehicle/${selectedVehicleId}`), // expecting { success, data: vehicle }
-          api.get(`/api/vehicles/${selectedVehicleId}/get-logs`),
+          logsApi.getLogs(selectedVehicleId),
         ]);
 
         // vehicle info
@@ -160,9 +164,7 @@ export default function FuelLogs() {
 
         // logs
         if (logsRes.status === "fulfilled" && logsRes.value && logsRes.value.success) {
-          // logsRes may return { success, count, logs }
           const logsArray = Array.isArray(logsRes.value.logs) ? logsRes.value.logs : logsRes.value.data?.logs ?? logsRes.value.logs ?? [];
-          // attach vehicleName for rendering convenience
           const vehicleName = vehicleRes.status === "fulfilled" && vehicleRes.value && vehicleRes.value.success ? vehicleRes.value.data?.name : "";
           const final = (logsArray || []).map((l) => ({ ...l, vehicleName }));
           final.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -174,12 +176,11 @@ export default function FuelLogs() {
     } catch (err) {
       console.error("fetchLogs error:", err);
       setError("Unable to load logs");
-      // use backend message if available (but here we don't have it due to a thrown exception)
       toast.error("Failed to fetch logs");
     } finally {
       setLoadingLogs(false);
     }
-  }, [selectedVehicleId, fetchAllVehiclesForUser]);
+  }, [selectedVehicleId, fetchAllVehiclesForUser, logsApi]);
 
   // fetch logs initially and whenever selectedVehicleId / filters change
   useEffect(() => {
@@ -221,7 +222,6 @@ export default function FuelLogs() {
       }
     } catch (err) {
       console.warn("handleSubmitFromModal error:", err);
-      // fallback error toast
       toast.error("Operation completed but UI refresh failed");
     } finally {
       setOpenAddEdit(false);
@@ -245,7 +245,7 @@ export default function FuelLogs() {
         toast.error("Missing identifiers for delete");
         return;
       }
-      const res = await api.del(`/api/vehicles/${vehicleId}/delete-logs/${logId}`);
+      const res = await logsApi.deleteLog(vehicleId, logId);
       if (res && res.success) {
         setLogs((prev) => prev.filter((l) => (l._id || l.id) !== logId));
         // Use backend message when present
